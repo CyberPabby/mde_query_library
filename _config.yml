@@ -1,0 +1,16 @@
+title: MDE Query Library
+description: Collection of Kusto queries and documentation for Microsoft Defender for Endpoint (MDE) scenarios.
+theme: minima
+markdown: kramdown
+include:
+  - README.md
+nav:
+  - Home: index.md
+  - Vulnerabilities: vulnerabilities.md
+  - Server hardening: server-hardening.md
+  - Threat hunting: threat-hunting.md
+  - Devices: devices.md
+  - Software: software.md
+  - Networking: networking.md
+  - Identity: identity.md
+  - Incident response: incident-response.md
