@@ -1,10 +1,21 @@
+# Device Queries
+
+MDE Advanced Hunting queries for device inventory, compliance, onboarding, and security configuration.
+
+## Queries
+
+1. [Finding Devices Requiring Secure Boot](#finding-devices-requiring-secure-boot)
+2. [Onboarded MDE Devices](#onboarded-mde-devices)
+
+---
+
 ## Finding Devices Requiring Secure Boot
 
 ### Purpose
 
-Identifies devices in Microsoft Defender for Endpoint that are applicable for Secure Boot but are currently reported as non-compliant.
+Identifies devices that are applicable for Secure Boot but are currently reported as non-compliant by Microsoft Defender for Endpoint.
 
-### MDE Advanced Hunting Query
+### Query
 
 ```kusto
 let SecureBootConfig =
@@ -35,3 +46,25 @@ DeviceTvmSecureConfigurationAssessment
     ConfigurationImpact,
     Tags
 | order by DeviceName asc
+```
+
+[⬆ Back to Queries](#queries)
+
+---
+
+## Onboarded MDE Devices
+
+### Purpose
+
+Shows the latest MDE device records grouped by onboarding status and Defender sensor health state.
+
+### Query
+
+```kusto
+DeviceInfo
+| summarize arg_max(Timestamp, *) by DeviceId
+| summarize Device_Count = dcount(DeviceId) by OnboardingStatus, SensorHealthState
+| order by Device_Count desc
+```
+
+[⬆ Back to Queries](#queries)
