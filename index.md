@@ -23,7 +23,7 @@ Advanced Hunting queries.
 [View Threat Hunting Queries](threat-hunting.html)
 
 ### 💻 Device Investigation
-[View Device Queries](devices.html)
+[View Device Queries](devices.md)
 
 ### 📦 Software
 [View Software Queries](software.html)
