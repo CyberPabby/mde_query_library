@@ -73,36 +73,35 @@ The query combines the latest device information with Microsoft Defender secure 
 ### Query
 
 ```kusto
-let DeviceLatest =
-DeviceInfo
-| summarize arg_max(Timestamp, *) by DeviceId
-| project
-    DeviceId,
-    LastSeen = Timestamp,
-    DeviceName,
-    DeviceType,
-    DeviceSubtype,
-    OSPlatform,
-    OSVersion,
-    OnboardingStatus,
-    SensorHealthState,
-    MachineGroup;
-
-let TamperConfig =
-DeviceTvmSecureConfigurationAssessmentKB
-| where ConfigurationName has_any ("Tamper", "Tamper Protection")
-| project
-    ConfigurationId,
-    ConfigurationName,
-    ConfigurationDescription,
-    RiskDescription,
-    RemediationOptions;
-
 DeviceTvmSecureConfigurationAssessment
 | where IsApplicable == 1
 | summarize arg_max(Timestamp, *) by DeviceId, ConfigurationId
-| join kind=inner TamperConfig on ConfigurationId
-| join kind=leftouter DeviceLatest on DeviceId
+| join kind=inner (
+    DeviceTvmSecureConfigurationAssessmentKB
+    | where ConfigurationName contains "Tamper"
+        or ConfigurationDescription contains "Tamper"
+    | project
+        ConfigurationId,
+        ConfigurationName,
+        ConfigurationDescription,
+        RiskDescription,
+        RemediationOptions
+) on ConfigurationId
+| join kind=leftouter (
+    DeviceInfo
+    | summarize arg_max(Timestamp, *) by DeviceId
+    | project
+        DeviceId,
+        LastSeen = Timestamp,
+        LatestDeviceName = DeviceName,
+        DeviceType,
+        DeviceSubtype,
+        LatestOSPlatform = OSPlatform,
+        OSVersion,
+        OnboardingStatus,
+        SensorHealthState,
+        MachineGroup
+) on DeviceId
 | extend TamperProtectionStatus = case(
     IsCompliant == 1, "Enabled",
     IsCompliant == 0, "Disabled / Not Compliant",
@@ -110,10 +109,10 @@ DeviceTvmSecureConfigurationAssessment
 )
 | project
     LastSeen,
-    DeviceName,
+    DeviceName = LatestDeviceName,
     DeviceType,
     DeviceSubtype,
-    OSPlatform,
+    OSPlatform = LatestOSPlatform,
     OSVersion,
     OnboardingStatus,
     SensorHealthState,
