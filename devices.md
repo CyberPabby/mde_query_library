@@ -19,33 +19,23 @@ Identifies devices that are applicable for Secure Boot but are currently reporte
 ### Query
 
 ```kusto
-let SecureBootConfig =
-DeviceTvmSecureConfigurationAssessmentKB
-| where ConfigurationName has_any ("Secure Boot", "Secure boot")
-   or ConfigurationDescription has_any ("Secure Boot", "Secure boot")
-| project
-    ConfigurationId,
-    ConfigurationName,
-    ConfigurationDescription,
-    RiskDescription,
-    ConfigurationImpact,
-    Tags;
-
 DeviceTvmSecureConfigurationAssessment
 | where IsApplicable == 1
 | where IsCompliant == 0
-| join kind=inner SecureBootConfig on ConfigurationId
-| summarize arg_max(Timestamp, *) by DeviceId, ConfigurationId
+| where ConfigurationId in (
+    DeviceTvmSecureConfigurationAssessmentKB
+    | where ConfigurationName contains "Secure Boot"
+        or ConfigurationDescription contains "Secure Boot"
+    | project ConfigurationId
+)
+| summarize arg_max(Timestamp, *) by DeviceId
 | project
     Timestamp,
     DeviceName,
     OSPlatform,
     ConfigurationId,
-    ConfigurationName,
-    ConfigurationDescription,
-    RiskDescription,
-    ConfigurationImpact,
-    Tags
+    IsApplicable,
+    IsCompliant
 | order by DeviceName asc
 ```
 
